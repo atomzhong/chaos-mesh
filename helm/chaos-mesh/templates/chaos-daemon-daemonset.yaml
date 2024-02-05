@@ -98,7 +98,7 @@ spec:
         {{- end }}
         {{- if .Values.chaosDaemon.dockerClientAPIVersion }}
             - --docker-client-api-version
-            - {{ .Values.chaosDaemon.dockerClientAPIVersion  | toString }}
+            - !!str {{ .Values.chaosDaemon.dockerClientAPIVersion }}
         {{- end }}
           env:
             {{- if .Values.chaosDaemon.env }}
