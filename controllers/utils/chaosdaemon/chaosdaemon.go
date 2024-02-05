@@ -17,6 +17,7 @@ package chaosdaemon
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pkg/errors"
 	"go.uber.org/fx"
@@ -65,6 +66,11 @@ func (b *ChaosDaemonClientBuilder) FindDaemonIP(ctx context.Context, pod *v1.Pod
 
 	daemonIP := findIPOnEndpoints(&endpoints, nodeName)
 	if len(daemonIP) == 0 {
+		// 适配 tencent eks集群
+		if strings.Contains(pod.Spec.NodeName, "eklet-") || strings.Contains(pod.Spec.NodeName, "kn-") {
+			return pod.Status.PodIP, nil
+		}
+		// 原先的代码：
 		return "", errors.Errorf("cannot find daemonIP on node %s in related Endpoints %v", nodeName, endpoints)
 	}
 
@@ -75,6 +81,11 @@ func (b *ChaosDaemonClientBuilder) FindDaemonIP(ctx context.Context, pod *v1.Pod
 // The `id` parameter is the namespacedName of current handling resource,
 // which will be printed in the log of the chaos-daemon
 func (b *ChaosDaemonClientBuilder) Build(ctx context.Context, pod *v1.Pod, id *types.NamespacedName) (chaosdaemonclient.ChaosDaemonClientInterface, error) {
+	// 适配 tencent eks集群
+	if strings.Contains(pod.Spec.NodeName, "eklet-") || strings.Contains(pod.Spec.NodeName, "kn-") {
+		id.Name = pod.Name
+		id.Namespace = pod.Namespace
+	}
 	if cli := mock.On("MockChaosDaemonClient"); cli != nil {
 		return cli.(chaosdaemonclient.ChaosDaemonClientInterface), nil
 	}

@@ -241,6 +241,9 @@ chaosDaemon:
     # rollingUpdate:
     #   maxUnavailable: 33%
 
+  # Specify DockerClientAPI version
+  dockerClientAPIVersion: ""
+
 dashboard:
   # Enable chaos-dashboard
   create: true

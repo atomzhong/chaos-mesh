@@ -39,9 +39,10 @@ const (
 // CrClientConfig contains the basic cr client configuration.
 type CrClientConfig struct {
 	// Support docker, containerd, crio for now
-	Runtime      string
-	SocketPath   string
-	ContainerdNS string
+	Runtime                string
+	SocketPath             string
+	ContainerdNS           string
+	DockerClientAPIVersion string
 }
 
 // ContainerRuntimeInfoClient represents a struct which can give you information about container runtime
@@ -67,7 +68,7 @@ func CreateContainerRuntimeInfoClient(clientConfig *CrClientConfig) (ContainerRu
 		} else {
 			socketPath = "unix://" + socketPath
 		}
-		cli, err = docker.New(socketPath, "", nil, nil)
+		cli, err = docker.New(socketPath, clientConfig.DockerClientAPIVersion, nil, nil)
 		if err != nil {
 			return nil, err
 		}
