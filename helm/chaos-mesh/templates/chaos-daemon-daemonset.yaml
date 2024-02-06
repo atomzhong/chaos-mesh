@@ -40,6 +40,8 @@ spec:
         {{- if .Values.chaosDaemon.mtls.enabled }}
         rollme: {{ randAlphaNum 5 | quote }}
         {{- end }}
+        eks.tke.cloud.tencent.com/ds-inject-by-label: "chaos-enable:true"
+        eks.tke.cloud.tencent.com/ds-injection: "true"
     {{- with .Values.chaosDaemon.podAnnotations }}
 {{ toYaml . | indent 8 }}
     {{- end }}
