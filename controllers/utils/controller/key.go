@@ -59,15 +59,7 @@ func ParseNamespacedNameContainer(namespacedName string) (types.NamespacedName, 
 
 func ParseNamespacedNameIfContainer(namespacedName string) (types.NamespacedName, string, error) {
 	parts := strings.Split(namespacedName, "/")
-	if len(parts) > 1 {
-		// There will be two situations here:
-		// 1. ContainerNames are not configured in PodFailure yaml;
-		// 2. ContainerNames are configured but no matching container was found.
-		return types.NamespacedName{
-			Namespace: parts[0],
-			Name:      parts[1],
-		}, "", nil
-	} else if len(parts) > 2 {
+	if len(parts) > 2 {
 		//  a lowercase RFC 1123 label must consist of lower case alphanumeric
 		//  characters or '-', and must start and end with an alphanumeric
 		//  character, so the container name can never have "/"
@@ -75,6 +67,14 @@ func ParseNamespacedNameIfContainer(namespacedName string) (types.NamespacedName
 			Namespace: parts[0],
 			Name:      parts[1],
 		}, parts[2], nil
+	} else if len(parts) > 1 {
+		// There will be two situations here:
+		// 1. ContainerNames are not configured in PodFailure yaml;
+		// 2. ContainerNames are configured but no matching container was found.
+		return types.NamespacedName{
+			Namespace: parts[0],
+			Name:      parts[1],
+		}, "", nil
 	}
 
 	return types.NamespacedName{
