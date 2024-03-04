@@ -89,7 +89,16 @@ type PodChaosStatus struct {
 
 func (obj *PodChaos) GetSelectorSpecs() map[string]interface{} {
 	switch obj.Spec.Action {
-	case PodKillAction, PodFailureAction:
+	case PodKillAction:
+		return map[string]interface{}{
+			".": &obj.Spec.PodSelector,
+		}
+	case PodFailureAction:
+		if &obj.Spec.ContainerSelector != nil {
+			return map[string]interface{}{
+				".": &obj.Spec.ContainerSelector,
+			}
+		}
 		return map[string]interface{}{
 			".": &obj.Spec.PodSelector,
 		}

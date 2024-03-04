@@ -17,7 +17,6 @@ package podfailure
 
 import (
 	"context"
-
 	v1 "k8s.io/api/core/v1"
 	k8sError "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,7 +38,7 @@ func (impl *Impl) Apply(ctx context.Context, index int, records []*v1alpha1.Reco
 	podchaos := obj.(*v1alpha1.PodChaos)
 
 	var origin v1.Pod
-	namespacedName, err := controller.ParseNamespacedName(records[index].Id)
+	namespacedName, containerName, err := controller.ParseNamespacedNameIfContainer(records[index].Id)
 	if err != nil {
 		return v1alpha1.NotInjected, err
 	}
@@ -48,10 +47,15 @@ func (impl *Impl) Apply(ctx context.Context, index int, records []*v1alpha1.Reco
 		// TODO: handle this error
 		return v1alpha1.NotInjected, err
 	}
+
 	pod := origin.DeepCopy()
 	for index := range pod.Spec.Containers {
 		originImage := pod.Spec.Containers[index].Image
 		name := pod.Spec.Containers[index].Name
+		// only selected container will be applied
+		if containerName != "" && name != containerName {
+			continue
+		}
 
 		key := annotation.GenKeyForImage(podchaos, name, false)
 		if pod.Annotations == nil {
@@ -69,6 +73,10 @@ func (impl *Impl) Apply(ctx context.Context, index int, records []*v1alpha1.Reco
 	for index := range pod.Spec.InitContainers {
 		originImage := pod.Spec.InitContainers[index].Image
 		name := pod.Spec.InitContainers[index].Name
+		// only selected container will be applied
+		if containerName != "" && name != containerName {
+			continue
+		}
 
 		key := annotation.GenKeyForImage(podchaos, name, true)
 		if pod.Annotations == nil {
