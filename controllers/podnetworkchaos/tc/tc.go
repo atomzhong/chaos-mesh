@@ -18,10 +18,10 @@ package tc
 import (
 	"context"
 	"fmt"
-
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"strings"
 
 	"github.com/chaos-mesh/chaos-mesh/controllers/chaosimpl/utils"
 	chaosdaemonclient "github.com/chaos-mesh/chaos-mesh/pkg/chaosdaemon/client"
@@ -42,6 +42,11 @@ func SetTcs(ctx context.Context, pbClient chaosdaemonclient.ChaosDaemonClientInt
 
 	log.Info("Settings Tcs...")
 	for _, containerStatus := range pod.Status.ContainerStatuses {
+		if strings.Contains(pod.Spec.NodeName, "eklet-") || strings.Contains(pod.Spec.NodeName, "kn-") {
+			if strings.Contains(containerStatus.Name, "chaos-daemon") {
+				continue
+			}
+		}
 		containerName := containerStatus.Name
 		containerID := containerStatus.ContainerID
 		log.Info("attempting to set tcs", "containerName", containerName, "containerID", containerID)
